@@ -23,11 +23,15 @@ const dbUrl = process.env.MONGODB_URI || process.env.ATLASDB_URL || "mongodb://1
 
 async function connectDB() {
   try {
-    await mongoose.connect(dbUrl);
+    await mongoose.connect(dbUrl, {
+      serverSelectionTimeoutMS: 5000,
+      socketTimeoutMS: 45000,
+    });
     console.log("✓ Connected to MongoDB");
   } catch (err) {
-    console.error("✗ Database connection failed:", err);
-    process.exit(1);
+    console.error("✗ Database connection failed:", err.message);
+    console.log("⚠ Server continuing without database. Retrying connection...");
+    setTimeout(connectDB, 5000); // Retry after 5 seconds
   }
 }
 

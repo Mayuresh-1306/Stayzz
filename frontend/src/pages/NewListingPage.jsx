@@ -36,17 +36,18 @@ function NewListingPage({ isLoggedIn }) {
     setLoading(true);
 
     const form = new FormData();
-    form.append('title', formData.title);
-    form.append('description', formData.description);
-    form.append('price', formData.price);
-    form.append('location', formData.location);
-    form.append('country', formData.country);
+    form.append('listing[title]', formData.title);
+    form.append('listing[description]', formData.description);
+    form.append('listing[price]', formData.price);
+    form.append('listing[location]', formData.location);
+    form.append('listing[country]', formData.country);
     if (formData.image) {
-      form.append('image', formData.image);
+      form.append('listing[image]', formData.image);
     }
 
     try {
-      await axios.post('http://localhost:5002/api/listings', form, {
+      const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:5002';
+      await axios.post(`${backendUrl}/api/listings`, form, {
         headers: {
           'Content-Type': 'multipart/form-data',
           Authorization: `Bearer ${localStorage.getItem('token')}`,
@@ -55,6 +56,7 @@ function NewListingPage({ isLoggedIn }) {
       toast.success('Listing created successfully!');
       navigate('/listings');
     } catch (error) {
+      console.error('Error:', error.response?.data || error.message);
       toast.error(error.response?.data?.error || 'Failed to create listing');
     } finally {
       setLoading(false);
