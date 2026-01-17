@@ -126,12 +126,25 @@ module.exports.showListing = async (req, res) => {
 };
 
 module.exports.createListing = async (req, res, next) => {
-  let url = req.file.path;
-  let filename = req.file.filename;
- 
+  if (!req.user || !req.user.id) {
+    return res.status(401).json({ error: "Authentication required" });
+  }
   const newListing = new Listing(req.body.listing);
-  newListing.owner = req.user._id;
-  newListing.image = {url, filename};
+  newListing.owner = req.user.id;
+  
+  // Handle image if provided
+  if (req.file) {
+    newListing.image = {
+      url: req.file.path || `/uploads/${req.file.filename}`,
+      filename: req.file.filename
+    };
+  } else {
+    // Use a default image if none provided
+    newListing.image = {
+      url: "https://images.unsplash.com/photo-1552321554-5fefe8c9ef14?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=60",
+      filename: "default"
+    };
+  }
   
   // Set default coordinates if not provided
   if (!newListing.coordinates) {
@@ -160,10 +173,11 @@ module.exports.updateListing = async (req, res) => {
 
    let listing = await Listing.findByIdAndUpdate(id, {...req.body.listing}, { new: true });
    
-   if(typeof req.file != "undefined") {
-    let url = req.file.path;
-    let filename = req.file.filename;
-    listing.image = {url, filename};
+   if(req.file) {
+    listing.image = {
+      url: req.file.path || `/uploads/${req.file.filename}`,
+      filename: req.file.filename
+    };
     await listing.save();
    }
 
@@ -174,6 +188,4 @@ module.exports.destroyListing = async (req, res)=> {
    let {id} = req.params;
    let deletedListing = await Listing.findByIdAndDelete(id);
    res.json({ success: true, message: "Listing Deleted!", listing: deletedListing });
-    req.flash("success", "Listing Deleted!");
-   res.redirect("/listings");
-   };
+};
