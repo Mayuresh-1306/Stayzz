@@ -1,35 +1,62 @@
-# Stayzz - Modern MERN Travel Marketplace
+# 🏨 Stayzz - Airbnb-Style Property Rental Platform
 
-A full-stack MERN application for booking and listing properties with modern UI and Google Maps integration.
+A modern, full-stack property rental platform built with React and Express, featuring an **interactive Airbnb-like map interface** for discovering and booking unique accommodations worldwide. Fully responsive design optimized for mobile, tablet, and desktop devices.
 
-## Features
+## ✨ Highlights
 
-- 🏠 Property Listings with detailed information
-- 🗺️ Google Maps Integration for location visualization
-- 👤 User Authentication (Signup/Login with JWT)
-- 📝 Create, Read, Update, Delete Listings
-- ⭐ Reviews and Ratings System
-- 💰 Dynamic Pricing
-- 🎨 Modern, Responsive UI with Tailwind CSS
-- 📱 Mobile-friendly Design
-- ☁️ Cloud Image Upload (Cloudinary)
+- 🗺️ **Interactive Airbnb-Style Map** with real-time property visualization and coordinate mapping
+- 📱 **Fully Responsive Design** - seamless experience on all devices
+- 🔍 **Advanced Listing Discovery** with filtering and detailed property information
+- 💬 **Integrated Review System** for transparent guest feedback
+- 🔐 **Secure Authentication** with JWT-based login/signup
+- 🏠 **Complete Property Management** - create, edit, and manage listings
+- ☁️ **Cloud Image Upload** via Cloudinary
+- 📍 **Location Intelligence** with GPS coordinates and map integration
 
-## Tech Stack
+## 🎯 Key Features
+
+### For Travelers
+- ✅ Browse properties on beautiful interactive map view
+- ✅ View detailed listing information with high-quality images
+- ✅ Read authentic guest reviews and ratings
+- ✅ Search and filter properties by location
+- ✅ Responsive mobile-friendly interface
+- ✅ See exact property coordinates and locations
+
+### For Property Owners
+- ✅ Create and manage property listings easily
+- ✅ Upload property images (unlimited with Cloudinary)
+- ✅ Set and adjust competitive pricing
+- ✅ Edit listing details anytime
+- ✅ Track customer reviews and ratings
+- ✅ Monitor bookings and reservations
+
+### Technical Features
+- ✅ Smart fallback map visualization (works without Google Maps API)
+- ✅ Auto-generating sample data for demo purposes
+- ✅ Real-time location mapping with coordinate normalization
+- ✅ Responsive grid layouts for all screen sizes
+- ✅ Comprehensive error handling and graceful degradation
+
+## 🛠️ Tech Stack
 
 ### Backend
-- **Node.js & Express.js** - REST API server
-- **MongoDB & Mongoose** - Database
-- **JWT** - Authentication
-- **Cloudinary** - Image hosting
-- **Joi** - Data validation
+- **Node.js 22.16.0** - JavaScript runtime
+- **Express 5.1.0** - Web framework
+- **MongoDB** - NoSQL database
+- **Mongoose** - MongoDB ODM
+- **JWT** - Authentication tokens
+- **Cloudinary** - Image hosting & CDN
+- **Joi** - Schema validation
 
 ### Frontend
-- **React 18** - UI library
+- **React 18.2.0** - UI library
 - **React Router v6** - Client-side routing
-- **Tailwind CSS** - Styling
-- **Axios** - HTTP client
-- **Google Maps API** - Location mapping
-- **React Toastify** - Notifications
+- **Tailwind CSS 3.3.6** - Utility-first CSS framework
+- **Axios** - Promise-based HTTP client
+- **React Icons** - Icon library
+- **Google Maps JavaScript API** - Map integration
+- **React Toastify** - Toast notifications
 
 ## Project Structure
 
