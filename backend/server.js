@@ -19,7 +19,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Database Connection
-const dbUrl = process.env.ATLASDB_URL || "mongodb://127.0.0.1:27017/stayzz";
+const dbUrl = process.env.MONGODB_URI || process.env.ATLASDB_URL || "mongodb://127.0.0.1:27017/stayzz";
 
 async function connectDB() {
   try {

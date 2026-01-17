@@ -24,7 +24,8 @@ function ListingsPage() {
 
   const fetchListings = async () => {
     try {
-      const response = await axios.get('http://localhost:5002/api/listings');
+      const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:5002';
+      const response = await axios.get(`${backendUrl}/api/listings`);
       setListings(response.data);
       setLoading(false);
     } catch (error) {
