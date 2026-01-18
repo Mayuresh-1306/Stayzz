@@ -97,7 +97,13 @@ const SAMPLE_LISTINGS = [
 module.exports.index = async (req, res) => {
   try {
     const allListings = await Listing.find({}).populate("owner");
-    res.json(allListings);
+    if (allListings.length === 0) {
+      // Return sample data if database is connected but empty
+      console.log("No listings in database, using sample data");
+      res.json(SAMPLE_LISTINGS);
+    } else {
+      res.json(allListings);
+    }
   } catch (error) {
     // Return sample data if database is not connected
     console.log("Using fallback sample data due to:", error.message);
