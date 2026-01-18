@@ -19,13 +19,16 @@ function LoginPage({ setIsLoggedIn }) {
     });
   };
 
-  const handleSubmit = async (e) => {
+ const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
 
     try {
+      // ✅ FIX: Use the Render Environment Variable
+      const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:5002';
+
       const response = await axios.post(
-        'http://localhost:5002/api/users/login',
+        `${backendUrl}/api/users/login`,
         formData
       );
 

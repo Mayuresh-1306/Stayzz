@@ -22,7 +22,7 @@ function SignupPage({ setIsLoggedIn }) {
     });
   };
 
-  const handleSubmit = async (e) => {
+const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (formData.password !== formData.confirmPassword) {
@@ -33,8 +33,11 @@ function SignupPage({ setIsLoggedIn }) {
     setLoading(true);
 
     try {
+      // ✅ FIX: Use the Environment Variable
+      const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:5002';
+      
       const response = await axios.post(
-        'http://localhost:5002/api/users/signup',
+        `${backendUrl}/api/users/signup`,
         {
           username: formData.username,
           email: formData.email,
