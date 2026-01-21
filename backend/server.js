@@ -1,27 +1,32 @@
+import dotenv from "dotenv";
 if (process.env.NODE_ENV !== "production") {
-  require("dotenv").config();
+  dotenv.config();
 }
 
-// Set default JWT secret if not provided
 process.env.JWT_SECRET = process.env.JWT_SECRET || "your-super-secret-jwt-key-change-this-in-production";
 
-const express = require("express");
-const mongoose = require("mongoose");
-const cors = require("cors");
-require("express-async-errors");
+import dns from "dns";
+dns.setServers(["8.8.8.8", "8.8.4.4", "1.1.1.1"]);
+
+import express from "express";
+import mongoose from "mongoose";
+import cors from "cors";
+import "express-async-errors";
+
+import listingRouter from "./routes/listing.js";
+import reviewRouter from "./routes/review.js";
+import userRouter from "./routes/user.js";
 
 const app = express();
 
-// Middleware
 app.use(cors({
-  origin: process.env.CLIENT_URL || "http://localhost:3000",
+  origin: [process.env.CLIENT_URL, "http://localhost:3000", "https://stayzz-1olr.onrender.com"].filter(Boolean),
   credentials: true,
 }));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Database Connection
 const dbUrl = process.env.MONGODB_URI || process.env.ATLASDB_URL || "mongodb://127.0.0.1:27017/stayzz";
 
 async function connectDB() {
@@ -34,27 +39,24 @@ async function connectDB() {
   } catch (err) {
     console.error("✗ Database connection failed:", err.message);
     console.log("⚠ Server continuing without database. Retrying connection...");
-    setTimeout(connectDB, 5000); // Retry after 5 seconds
+    setTimeout(connectDB, 5000);
   }
 }
 
 connectDB();
 
-// Routes
-app.use("/api/listings", require("./routes/listing.js"));
-app.use("/api/reviews", require("./routes/review.js"));
-app.use("/api/users", require("./routes/user.js"));
+app.use("/api/listings", listingRouter);
+app.use("/api/reviews", reviewRouter);
+app.use("/api/users", userRouter);
 
-// Health check
 app.get("/api/health", (req, res) => {
   res.json({ status: "Backend is running", timestamp: new Date() });
 });
 
-// Test endpoint to check database
 app.get("/api/test", async (req, res) => {
   try {
     const collections = await mongoose.connection.db.listCollections().toArray();
-    res.json({ 
+    res.json({
       status: "Connected to database",
       database: mongoose.connection.name,
       collections: collections.map(c => c.name)
@@ -64,7 +66,6 @@ app.get("/api/test", async (req, res) => {
   }
 });
 
-// Error handling middleware
 app.use((err, req, res, next) => {
   console.error(err);
   const status = err.status || 500;

@@ -1,6 +1,5 @@
-const Listing = require("../models/listing");
+import Listing from "../models/listing.js";
 
-// Sample data for fallback when database is not connected
 const SAMPLE_LISTINGS = [
   {
     _id: "sample1",
@@ -94,104 +93,99 @@ const SAMPLE_LISTINGS = [
   }
 ];
 
-module.exports.index = async (req, res) => {
+export const index = async (req, res) => {
   try {
     const allListings = await Listing.find({}).populate("owner");
     if (allListings.length === 0) {
-      // Return sample data if database is connected but empty
       console.log("No listings in database, using sample data");
       res.json(SAMPLE_LISTINGS);
     } else {
       res.json(allListings);
     }
   } catch (error) {
-    // Return sample data if database is not connected
     console.log("Using fallback sample data due to:", error.message);
     res.json(SAMPLE_LISTINGS);
   }
 };
 
-module.exports.renderNewForm = (req, res) => {
-   res.json({ message: "Create new listing" });
+export const renderNewForm = (req, res) => {
+  res.json({ message: "Create new listing" });
 };
 
-module.exports.showListing = async (req, res) => {
-    let {id} = req.params;
-    const listing = await Listing.findById(id)
+export const showListing = async (req, res) => {
+  let { id } = req.params;
+  const listing = await Listing.findById(id)
     .populate({
-        path: "reviews",
-        populate: {
-            path: "author",
-        },
+      path: "reviews",
+      populate: {
+        path: "author",
+      },
     })
     .populate("owner");
-    if (!listing) {
-        return res.status(404).json({ error: "Listing not found" });
-    }
-    res.json(listing);
+  if (!listing) {
+    return res.status(404).json({ error: "Listing not found" });
+  }
+  res.json(listing);
 };
 
-module.exports.createListing = async (req, res, next) => {
+export const createListing = async (req, res, next) => {
   if (!req.user || !req.user.id) {
     return res.status(401).json({ error: "Authentication required" });
   }
   const newListing = new Listing(req.body.listing);
   newListing.owner = req.user.id;
-  
-  // Handle image if provided
+
   if (req.file) {
     newListing.image = {
       url: req.file.path || `/uploads/${req.file.filename}`,
       filename: req.file.filename
     };
   } else {
-    // Use a default image if none provided
     newListing.image = {
       url: "https://images.unsplash.com/photo-1552321554-5fefe8c9ef14?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=60",
       filename: "default"
     };
   }
-  
-  // Set default coordinates if not provided
+
   if (!newListing.coordinates) {
     newListing.coordinates = {
       latitude: 20.5937,
       longitude: 78.9629
     };
   }
-  
+
   await newListing.save();
   res.status(201).json({ success: true, listing: newListing, message: "New Listing Created!" });
 };
 
-module.exports.renderEditForm = async (req, res) => {
-    let {id} = req.params;
-    const listing = await Listing.findById(id);
-    if(!listing){
-      return res.status(404).json({ error: "Listing not found" });
-    }
-    res.json(listing);
+export const renderEditForm = async (req, res) => {
+  let { id } = req.params;
+  const listing = await Listing.findById(id);
+  if (!listing) {
+    return res.status(404).json({ error: "Listing not found" });
+  }
+  res.json(listing);
 };
 
-module.exports.updateListing = async (req, res) => {
-   
-    let {id} = req.params;
+export const updateListing = async (req, res) => {
 
-   let listing = await Listing.findByIdAndUpdate(id, {...req.body.listing}, { new: true });
-   
-   if(req.file) {
+  let { id } = req.params;
+
+  let listing = await Listing.findByIdAndUpdate(id, { ...req.body.listing }, { new: true });
+
+  if (req.file) {
     listing.image = {
       url: req.file.path || `/uploads/${req.file.filename}`,
       filename: req.file.filename
     };
     await listing.save();
-   }
+  }
 
-   res.json({ success: true, listing: listing, message: "Listing Updated!" });
+  res.json({ success: true, listing: listing, message: "Listing Updated!" });
 };
 
-module.exports.destroyListing = async (req, res)=> {
-   let {id} = req.params;
-   let deletedListing = await Listing.findByIdAndDelete(id);
-   res.json({ success: true, message: "Listing Deleted!", listing: deletedListing });
+export const destroyListing = async (req, res) => {
+  let { id } = req.params;
+  let deletedListing = await Listing.findByIdAndDelete(id);
+  res.json({ success: true, message: "Listing Deleted!", listing: deletedListing });
 };

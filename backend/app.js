@@ -1,25 +1,32 @@
-if(process.env.NODE_ENV != "production") {
-  require('dotenv').config();
+import dotenv from "dotenv";
+if (process.env.NODE_ENV != "production") {
+  dotenv.config();
 }
 
-const express = require("express");
-const app = express();
-const mongoose = require("mongoose");
-const path = require("path");
-const cors = require("cors"); // ✅ ADDED: CORS package
-const methodOverride = require("method-override");
-const ejsMate = require("ejs-mate");
-const ExpressError = require("./utils/ExpressError.js");
-const session = require("express-session");
-const MongoStore = require("connect-mongo");
-const flash = require("connect-flash");
-const passport = require("passport");
-const LocalStrategy = require("passport-local");
-const User = require("./models/user.js");
+import express from "express";
+import mongoose from "mongoose";
+import path from "path";
+import cors from "cors";
+import methodOverride from "method-override";
+import ejsMate from "ejs-mate";
+import ExpressError from "./utils/ExpressError.js";
+import session from "express-session";
+import MongoStore from "connect-mongo";
+import flash from "connect-flash";
+import passport from "passport";
+import { Strategy as LocalStrategy } from "passport-local";
+import User from "./models/user.js";
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
 
-const listingRouter = require("./routes/listing.js");
-const reviewRouter = require("./routes/review.js");
-const userRouter = require("./routes/user.js");
+import listingRouter from "./routes/listing.js";
+import reviewRouter from "./routes/review.js";
+import userRouter from "./routes/user.js";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+const app = express();
 
 const dbUrl = process.env.ATLASDB_URL;
 
@@ -32,25 +39,22 @@ main()
   });
 
 async function main() {
-  await mongoose.connect(dbUrl); // ✅ ADDED: 'await' is better practice here
+  await mongoose.connect(dbUrl);
 }
 
-// Configuration
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
-app.use(express.urlencoded({extended: true}));
+app.use(express.urlencoded({ extended: true }));
 app.use(methodOverride("_method"));
-app.use(express.json()); // ✅ CRITICAL: Allows backend to read JSON from React
+app.use(express.json());
 app.engine('ejs', ejsMate);
 app.use(express.static(path.join(__dirname, "/public")));
 
-// ✅ ADDED: CORS Configuration
-// This enables your Frontend to talk to your Backend
 const allowedOrigins = [
-  "http://localhost:3000",                  // Local React
-  "http://localhost:5173",                  // Local Vite (just in case)
-  "https://stayzz-frontend.onrender.com",   // Your Frontend Render URL (Check this!)
-  "https://stayzz-1olr.onrender.com"        // Your other Frontend URL seen in logs
+  "http://localhost:3000",
+  "http://localhost:5173",
+  "https://stayzz-frontend.onrender.com",
+  "https://stayzz-1olr.onrender.com"
 ];
 
 app.use(cors({
@@ -58,7 +62,6 @@ app.use(cors({
   credentials: true
 }));
 
-// Session Store
 const store = MongoStore.create({
   mongoUrl: dbUrl,
   crypto: {
@@ -67,7 +70,7 @@ const store = MongoStore.create({
   touchAfter: 24 * 3600,
 });
 
-store.on("error", (err) => { // ✅ FIXED: added 'err' argument
+store.on("error", (err) => {
   console.log("ERROR in MONGO SESSION STORE", err);
 });
 
@@ -99,24 +102,20 @@ app.use((req, res, next) => {
   next();
 });
 
-// ✅ UPDATED ROUTES: Added '/api' prefix to match your React Frontend
 app.use("/api/listings", listingRouter);
 app.use("/api/listings/:id/reviews", reviewRouter);
-app.use("/api/users", userRouter); 
+app.use("/api/users", userRouter);
 
-// Legacy support (optional): If you still use EJS views for some things
-app.use("/listings", listingRouter); 
+app.use("/listings", listingRouter);
 
 app.get("/", (req, res) => {
-  // Redirect to the API or send a welcome message
-  res.send("Stayzz Backend is running!"); 
+  res.send("Stayzz Backend is running!");
 });
 
 app.use((err, req, res, next) => {
-  let {statusCode = 500, message = "Something went wrong!"} = err;
-  // If request wants JSON (React), send JSON error
+  let { statusCode = 500, message = "Something went wrong!" } = err;
   if (req.headers.accept && req.headers.accept.includes('application/json')) {
-      return res.status(statusCode).json({ error: message });
+    return res.status(statusCode).json({ error: message });
   }
   res.status(statusCode).render("error.ejs", { message });
 });

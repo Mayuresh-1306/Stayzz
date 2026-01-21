@@ -1,30 +1,32 @@
-const cloudinary = require('cloudinary').v2;
-const { CloudinaryStorage } = require('multer-storage-cloudinary');
+import cloudinary from 'cloudinary';
+import { CloudinaryStorage } from 'multer-storage-cloudinary';
+import multer from 'multer';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+const cloudinaryV2 = cloudinary.v2;
 
 if (process.env.CLOUD_NAME && process.env.CLOUD_API_KEY && process.env.CLOUD_API_SECRET) {
-  cloudinary.config({
+  cloudinaryV2.config({
     cloud_name: process.env.CLOUD_NAME,
     api_key: process.env.CLOUD_API_KEY,
     api_secret: process.env.CLOUD_API_SECRET,
   });
 
   const storage = new CloudinaryStorage({
-    cloudinary: cloudinary,
+    cloudinary: cloudinaryV2,
     params: {
       folder: 'stayzz_DEV',
       allowedFormats: ["png", "jpg", "jpeg"],
     },
   });
 
-  module.exports = {
-    cloudinary,
-    storage,
-  };
+  export { cloudinaryV2 as cloudinary, storage };
 } else {
-  // Fallback: use local file storage
-  const multer = require('multer');
-  const path = require('path');
-
   const storage = multer.diskStorage({
     destination: (req, file, cb) => {
       cb(null, path.join(__dirname, 'uploads'));
@@ -35,9 +37,6 @@ if (process.env.CLOUD_NAME && process.env.CLOUD_API_KEY && process.env.CLOUD_API
     }
   });
 
-  module.exports = {
-    cloudinary: null,
-    storage,
-  };
+  export { storage };
+  export const cloudinary = null;
 }
- 

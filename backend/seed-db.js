@@ -1,7 +1,9 @@
-const mongoose = require('mongoose');
-require('dotenv').config();
-const Listing = require('./models/listing');
-const User = require('./models/user');
+import mongoose from 'mongoose';
+import dotenv from 'dotenv';
+import Listing from './models/listing.js';
+import User from './models/user.js';
+
+dotenv.config();
 
 const DUMMY_LISTINGS = [
   {
@@ -72,7 +74,6 @@ async function insertListings() {
     await mongoose.connect(dbUrl);
     console.log('✓ Connected to MongoDB');
 
-    // Create a demo user if not exists
     let demoUser = await User.findOne({ username: 'demo' });
     if (!demoUser) {
       demoUser = new User({ username: 'demo', email: 'demo@example.com', password: 'demo123' });
@@ -80,20 +81,17 @@ async function insertListings() {
       console.log('✓ Created demo user');
     }
 
-    // Add owner to listings
     const listingsWithOwner = DUMMY_LISTINGS.map(listing => ({
       ...listing,
       owner: demoUser._id
     }));
 
-    // Delete existing listings
     await Listing.deleteMany({});
     console.log('🗑️ Cleared existing listings');
 
-    // Insert new listings
     const result = await Listing.insertMany(listingsWithOwner);
     console.log(`✅ Inserted ${result.length} dummy listings`);
-    
+
     process.exit(0);
   } catch (error) {
     console.error('❌ Error:', error.message);

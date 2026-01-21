@@ -1,29 +1,25 @@
- const express = require("express");
+import express from "express";
+import wrapAsync from "../utils/wrapAsync.js";
+import * as listingController from "../controllers/listing.js";
+import { isLoggedIn, isOwner, validateListing, verifyToken } from "../middleware.js";
+import multer from 'multer';
+import { storage } from "../config/index.js";
+
 const router = express.Router();
-const wrapAsync = require("../utils/wrapAsync.js");
-const Listing = require("../models/listing.js");
-const {isloggedIn, isOwner, validateListing, verifyToken} = require("../middleware.js");
-const listingController = require("../controllers/listing.js");
-const multer  = require('multer')
-const {storage } = require("../cloudConfig.js");
 const upload = multer({ storage });
 
 router
-.route("/")
-.get( wrapAsync(listingController.index))
-.post(verifyToken, isloggedIn, upload.single("listing[image]"),validateListing, wrapAsync(listingController.createListing));
+    .route("/")
+    .get(wrapAsync(listingController.index))
+    .post(verifyToken, isLoggedIn, upload.single("listing[image]"), validateListing, wrapAsync(listingController.createListing));
 
-// New Route with better error handling
-router.get("/new", verifyToken, isloggedIn, listingController.renderNewForm );
+router.get("/new", verifyToken, isLoggedIn, listingController.renderNewForm);
 
 router.route("/:id")
-.get( wrapAsync(listingController.showListing))
-.put( verifyToken, isloggedIn, isOwner, upload.single("listing[image]"), validateListing, wrapAsync(listingController.updateListing) )
-.delete( verifyToken, isloggedIn, isOwner, wrapAsync(listingController.destroyListing) );
+    .get(wrapAsync(listingController.showListing))
+    .put(verifyToken, isLoggedIn, isOwner, upload.single("listing[image]"), validateListing, wrapAsync(listingController.updateListing))
+    .delete(verifyToken, isLoggedIn, isOwner, wrapAsync(listingController.destroyListing));
 
+router.get("/:id/edit", verifyToken, isOwner, isLoggedIn, wrapAsync(listingController.renderEditForm));
 
-
- //Edit Route
- router.get("/:id/edit", verifyToken, isOwner, isloggedIn, wrapAsync(listingController.renderEditForm));
-
-  module.exports = router;
+export default router;

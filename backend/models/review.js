@@ -15,8 +15,7 @@
 // });
 
 // module.exports = mongoose.model("Review", reviewSchema);
-// models/review.js
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 const Schema = mongoose.Schema;
 
 const reviewSchema = new Schema({
@@ -40,6 +39,5 @@ const reviewSchema = new Schema({
     }
 });
 
-// Add this to ensure the model is properly exported
 const Review = mongoose.model("Review", reviewSchema);
-module.exports = Review;
+export default Review;

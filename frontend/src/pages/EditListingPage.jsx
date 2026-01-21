@@ -19,7 +19,8 @@ function EditListingPage({ isLoggedIn }) {
 
   const fetchListing = async () => {
     try {
-      const response = await axios.get(`http://localhost:5002/api/listings/${id}`);
+      const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:5002';
+      const response = await axios.get(`${backendUrl}/api/listings/${id}`);
       setFormData(response.data);
       setLoading(false);
     } catch (error) {
@@ -46,7 +47,19 @@ function EditListingPage({ isLoggedIn }) {
     setSubmitting(true);
 
     try {
-      await axios.put(`http://localhost:5002/api/listings/${id}`, formData, {
+      const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:5002';
+      // Backend expects data wrapped in 'listing' object
+      const updateData = {
+        listing: {
+          title: formData.title,
+          description: formData.description,
+          price: formData.price,
+          location: formData.location,
+          country: formData.country,
+        }
+      };
+
+      await axios.put(`${backendUrl}/api/listings/${id}`, updateData, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`,
         },

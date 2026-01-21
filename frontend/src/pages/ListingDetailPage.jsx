@@ -20,7 +20,8 @@ function ListingDetailPage() {
 
   const fetchListing = async () => {
     try {
-      const response = await axios.get(`http://localhost:5002/api/listings/${id}`);
+      const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:5002';
+      const response = await axios.get(`${backendUrl}/api/listings/${id}`);
       setListing(response.data);
       setLoading(false);
     } catch (error) {
@@ -31,7 +32,8 @@ function ListingDetailPage() {
 
   const fetchReviews = async () => {
     try {
-      const response = await axios.get(`http://localhost:5002/api/reviews?listingId=${id}`);
+      const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:5002';
+      const response = await axios.get(`${backendUrl}/api/reviews?listingId=${id}`);
       setReviews(response.data);
     } catch (error) {
       console.error('Error fetching reviews:', error);
@@ -41,10 +43,17 @@ function ListingDetailPage() {
   const handleDeleteListing = async () => {
     if (window.confirm('Are you sure you want to delete this listing?')) {
       try {
-        await axios.delete(`http://localhost:5002/api/listings/${id}`);
+        const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:5002';
+        const token = localStorage.getItem('token');
+        await axios.delete(`${backendUrl}/api/listings/${id}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
         navigate('/listings');
       } catch (error) {
         console.error('Error deleting listing:', error);
+        alert(error.response?.data?.error || 'Failed to delete listing. Please make sure you are logged in.');
       }
     }
   };
@@ -157,7 +166,7 @@ function ListingDetailPage() {
               {/* Location Description */}
               <div className="mt-4 sm:mt-6 p-4 sm:p-6 bg-blue-50 border border-blue-200 rounded-lg">
                 <p className="text-gray-700 text-sm sm:text-base leading-relaxed">
-                  This property is located in {listing.location}, {listing.country}. The exact coordinates are marked on the map above. 
+                  This property is located in {listing.location}, {listing.country}. The exact coordinates are marked on the map above.
                   You can zoom in to see nearby amenities and attractions.
                 </p>
               </div>
