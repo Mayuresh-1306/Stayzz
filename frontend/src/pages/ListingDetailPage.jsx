@@ -33,10 +33,62 @@ function ListingDetailPage() {
   const fetchReviews = async () => {
     try {
       const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:5002';
-      const response = await axios.get(`${backendUrl}/api/reviews?listingId=${id}`);
+      const response = await axios.get(`${backendUrl}/api/listings/${id}/reviews`);
       setReviews(response.data);
     } catch (error) {
       console.error('Error fetching reviews:', error);
+      setReviews([]); // Set empty array on error
+    }
+  };
+
+  const handleSubmitReview = async (e) => {
+    e.preventDefault();
+
+    // Check if user is logged in
+    const token = localStorage.getItem('token');
+    if (!token) {
+      alert('Please login to submit a review');
+      navigate('/login');
+      return;
+    }
+
+    // Validate review content
+    if (!newReview.trim()) {
+      alert('Please write a review before submitting');
+      return;
+    }
+
+    try {
+      const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:5002';
+      const response = await axios.post(
+        `${backendUrl}/api/listings/${id}/reviews`,
+        {
+          review: {
+            content: newReview,
+            rating: rating
+          }
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+
+      if (response.data.success) {
+        // Clear form
+        setNewReview('');
+        setRating(5);
+
+        // Refresh reviews
+        await fetchReviews();
+
+        alert('Review submitted successfully!');
+      }
+    } catch (error) {
+      console.error('Error submitting review:', error);
+      alert(error.response?.data?.error || 'Failed to submit review. Please try again.');
     }
   };
 
@@ -200,7 +252,10 @@ function ListingDetailPage() {
                     placeholder="Share your experience..."
                     className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-red-500 h-24 resize-none text-sm sm:text-base"
                   />
-                  <button className="bg-red-500 hover:bg-red-600 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg transition font-semibold text-sm sm:text-base w-full sm:w-auto">
+                  <button
+                    onClick={handleSubmitReview}
+                    className="bg-red-500 hover:bg-red-600 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg transition font-semibold text-sm sm:text-base w-full sm:w-auto"
+                  >
                     Submit Review
                   </button>
                 </div>
@@ -216,7 +271,7 @@ function ListingDetailPage() {
                       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-2 gap-2">
                         <p className="font-semibold text-gray-800 flex items-center space-x-1 text-sm sm:text-base">
                           <FaUser className="text-gray-600" />
-                          <span>{review.author}</span>
+                          <span>{review.author?.username || 'Anonymous'}</span>
                         </p>
                         <div className="flex text-yellow-400">
                           {[...Array(review.rating)].map((_, i) => (
@@ -224,7 +279,7 @@ function ListingDetailPage() {
                           ))}
                         </div>
                       </div>
-                      <p className="text-gray-700 text-sm sm:text-base">{review.comment}</p>
+                      <p className="text-gray-700 text-sm sm:text-base">{review.content}</p>
                     </div>
                   ))
                 )}

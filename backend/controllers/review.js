@@ -17,6 +17,9 @@ export const createReview = async (req, res) => {
   await newReview.save();
   await listing.save();
 
+  // Populate author information before sending response
+  await newReview.populate('author');
+
   res.status(201).json({ success: true, review: newReview, message: "Review created successfully" });
 };
 
@@ -30,14 +33,14 @@ export const destroyReview = async (req, res) => {
 };
 
 export const getReviews = async (req, res) => {
-  const { listingId } = req.query;
+  const { id } = req.params;
 
-  if (!listingId) {
-    return res.status(400).json({ error: "listingId is required" });
+  if (!id) {
+    return res.status(400).json({ error: "Listing ID is required" });
   }
 
   try {
-    const listing = await Listing.findById(listingId).populate({
+    const listing = await Listing.findById(id).populate({
       path: "reviews",
       populate: {
         path: "author"

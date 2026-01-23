@@ -46,7 +46,7 @@ async function connectDB() {
 connectDB();
 
 app.use("/api/listings", listingRouter);
-app.use("/api/reviews", reviewRouter);
+app.use("/api/listings/:id/reviews", reviewRouter);
 app.use("/api/users", userRouter);
 
 app.get("/api/health", (req, res) => {
