@@ -21,10 +21,20 @@ function EditListingPage({ isLoggedIn }) {
     try {
       const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:5002';
       const response = await axios.get(`${backendUrl}/api/listings/${id}`);
-      setFormData(response.data);
+
+      // Extract only the fields needed for the form
+      const listing = response.data;
+      setFormData({
+        title: listing.title || '',
+        description: listing.description || '',
+        price: listing.price || '',
+        location: listing.location || '',
+        country: listing.country || '',
+      });
       setLoading(false);
     } catch (error) {
-      toast.error('Failed to load listing');
+      console.error('Error loading listing:', error);
+      toast.error(error.response?.data?.error || 'Failed to load listing');
       setLoading(false);
     }
   };
@@ -35,7 +45,8 @@ function EditListingPage({ isLoggedIn }) {
       return;
     }
     fetchListing();
-  }, [id, isLoggedIn, navigate, fetchListing]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id]); // Only re-fetch when listing ID changes
 
   const handleChange = (e) => {
     const { name, value } = e.target;

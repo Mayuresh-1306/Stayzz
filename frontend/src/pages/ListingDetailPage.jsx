@@ -143,9 +143,13 @@ function ListingDetailPage() {
             {/* Image */}
             {listing.image && (
               <img
-                src={listing.image.url}
+                src={listing.image.url || "https://images.unsplash.com/photo-1552321554-5fefe8c9ef14?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=60"}
                 alt={listing.title}
                 className="w-full h-64 sm:h-96 object-cover rounded-lg shadow-lg mb-6 sm:mb-8"
+                onError={(e) => {
+                  console.error("Image failed to load:", listing.image.url);
+                  e.target.src = "https://images.unsplash.com/photo-1552321554-5fefe8c9ef14?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=60";
+                }}
               />
             )}
 
