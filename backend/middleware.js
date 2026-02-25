@@ -1,10 +1,11 @@
-import jwt from "jsonwebtoken";
-import Listing from "./models/listing.js";
-import Review from "./models/review.js";
-import ExpressError from "./utils/ExpressError.js";
-import { listingSchema, reviewSchema } from "./schema.js";
+const jwt = require("jsonwebtoken");
+const Listing = require("./models/listing");
+const Review = require("./models/review");
+const ExpressError = require("./utils/ExpressError.js");
+const { listingSchema, reviewSchema } = require("./schema.js");
 
-export const verifyToken = (req, res, next) => {
+// JWT Authentication Middleware
+module.exports.verifyToken = (req, res, next) => {
     const token = req.headers.authorization?.split(" ")[1];
     if (!token) {
         return res.status(401).json({ error: "No token, authorization denied" });
@@ -14,25 +15,18 @@ export const verifyToken = (req, res, next) => {
         req.user = decoded;
         next();
     } catch (error) {
-        console.error("JWT Verification Error:", error.message);
-        if (error.name === 'TokenExpiredError') {
-            return res.status(401).json({ error: "Token has expired, please login again" });
-        }
-        if (error.name === 'JsonWebTokenError') {
-            return res.status(401).json({ error: "Invalid token format" });
-        }
         return res.status(401).json({ error: "Token is not valid" });
     }
 };
 
-export const isLoggedIn = (req, res, next) => {
+module.exports.isloggedIn = (req, res, next) => {
     if (!req.user) {
         return res.status(401).json({ error: "You must be logged in" });
     }
     next();
 };
 
-export const isOwner = async (req, res, next) => {
+module.exports.isOwner = async (req, res, next) => {
     let { id } = req.params;
     let listing = await Listing.findById(id);
     if (!listing) {
@@ -44,7 +38,7 @@ export const isOwner = async (req, res, next) => {
     next();
 };
 
-export const validateListing = (req, res, next) => {
+module.exports.validateListing = (req, res, next) => {
     let { error } = listingSchema.validate(req.body);
     if (error) {
         throw new ExpressError(400, error.details[0].message);
@@ -53,7 +47,7 @@ export const validateListing = (req, res, next) => {
     }
 };
 
-export const validateReview = (req, res, next) => {
+module.exports.validateReview = (req, res, next) => {
     const { error } = reviewSchema.validate(req.body);
     if (error) {
         const msg = error.details.map(el => el.message).join(",");
@@ -63,12 +57,12 @@ export const validateReview = (req, res, next) => {
     }
 };
 
-export const isReviewAuthor = async (req, res, next) => {
-    let { id, reviewId } = req.params;
-    let review = await Review.findById(reviewId);
-    if (!review.author.equals(req.user._id)) {
-        return res.status(403).json({ error: "You are not the author of this review" });
-    }
+module.exports.isReviewAuthor = async(req, res, next) => {
+  let {id, reviewId } = req.params;
+  let review = await Review.findById(reviewId);
+  if(!review.author.equals(req.user._id)) {
+    return res.status(403).json({ error: "You are not the author of this review" });
+  }
 
-    next();
+  next();
 };

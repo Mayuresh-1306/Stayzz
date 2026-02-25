@@ -2,25 +2,123 @@
 @import 'tailwindcss/components';
 @import 'tailwindcss/utilities';
 
-/* Import organized styles */
-@import './styles/index.css';
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
 
-/* Global Resets */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
-/* Base Styles */
 body {
-  font-family: var(--font-family-base, 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif);
-  background-color: var(--color-gray-50, #f9fafb);
+  font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #fff8f8;
+  /* very subtle rose-tinted white */
 }
 
-/* App Layout */
 .App {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
+}
+
+/* Smooth transitions */
+a,
+button {
+  transition: all 0.3s ease;
+}
+
+/* ─── Custom scrollbar (rose accent) ─────────────────── */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #fff1f2;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #fda4af, #fb7185);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #fb7185, #f43f5e);
+}
+
+/* ─── Global link & button overrides (light red) ─────── */
+.text-red-500 {
+  color: #f43f5e !important;
+}
+
+.hover\:text-red-500:hover {
+  color: #f43f5e !important;
+}
+
+.bg-red-500 {
+  background-color: #f43f5e !important;
+}
+
+.hover\:bg-red-600:hover {
+  background-color: #e11d48 !important;
+}
+
+.bg-red-600 {
+  background-color: #e11d48 !important;
+}
+
+.hover\:bg-red-700:hover {
+  background-color: #be123c !important;
+}
+
+.border-red-500 {
+  border-color: #f43f5e !important;
+}
+
+.focus\:border-red-500:focus {
+  border-color: #fb7185 !important;
+  box-shadow: 0 0 0 3px rgba(251, 113, 133, 0.15);
+}
+
+/* ─── Animations ─────────────────────────────────────── */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse-rose {
+
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(251, 113, 133, 0.3);
+  }
+
+  50% {
+    box-shadow: 0 0 0 8px rgba(251, 113, 133, 0);
+  }
+}
+
+.fade-in {
+  animation: fadeIn 0.3s ease-in;
+}
+
+.slide-up {
+  animation: slideUp 0.3s ease-out;
 }

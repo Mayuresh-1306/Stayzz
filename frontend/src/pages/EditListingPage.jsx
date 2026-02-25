@@ -19,22 +19,11 @@ function EditListingPage({ isLoggedIn }) {
 
   const fetchListing = async () => {
     try {
-      const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:5002';
-      const response = await axios.get(`${backendUrl}/api/listings/${id}`);
-
-      // Extract only the fields needed for the form
-      const listing = response.data;
-      setFormData({
-        title: listing.title || '',
-        description: listing.description || '',
-        price: listing.price || '',
-        location: listing.location || '',
-        country: listing.country || '',
-      });
+      const response = await axios.get(`http://localhost:5002/api/listings/${id}`);
+      setFormData(response.data);
       setLoading(false);
     } catch (error) {
-      console.error('Error loading listing:', error);
-      toast.error(error.response?.data?.error || 'Failed to load listing');
+      toast.error('Failed to load listing');
       setLoading(false);
     }
   };
@@ -45,8 +34,7 @@ function EditListingPage({ isLoggedIn }) {
       return;
     }
     fetchListing();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id]); // Only re-fetch when listing ID changes
+  }, [id, isLoggedIn, navigate, fetchListing]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -58,19 +46,7 @@ function EditListingPage({ isLoggedIn }) {
     setSubmitting(true);
 
     try {
-      const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:5002';
-      // Backend expects data wrapped in 'listing' object
-      const updateData = {
-        listing: {
-          title: formData.title,
-          description: formData.description,
-          price: formData.price,
-          location: formData.location,
-          country: formData.country,
-        }
-      };
-
-      await axios.put(`${backendUrl}/api/listings/${id}`, updateData, {
+      await axios.put(`http://localhost:5002/api/listings/${id}`, formData, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`,
         },

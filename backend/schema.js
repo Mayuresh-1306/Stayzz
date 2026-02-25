@@ -25,3 +25,12 @@ export const reviewSchema = Joi.object({
         content: Joi.string().required(),
     }).required(),
 });
+
+export const bookingSchema = Joi.object({
+    booking: Joi.object({
+        listingId: Joi.string().required(),
+        startDate: Joi.date().iso().required(),
+        endDate: Joi.date().iso().greater(Joi.ref('startDate')).required(),
+        guests: Joi.number().integer().min(1).default(1),
+    }).required(),
+});

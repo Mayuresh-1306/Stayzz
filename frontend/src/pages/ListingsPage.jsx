@@ -137,13 +137,9 @@ function ListingsPage() {
                     {listing.image && (
                       <div className="relative">
                         <img
-                          src={listing.image.url || "https://images.unsplash.com/photo-1552321554-5fefe8c9ef14?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=60"}
+                          src={listing.image.url}
                           alt={listing.title}
                           className="w-full h-64 object-cover"
-                          onError={(e) => {
-                            console.error("Image failed to load:", listing.image.url);
-                            e.target.src = "https://images.unsplash.com/photo-1552321554-5fefe8c9ef14?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=60";
-                          }}
                         />
                         <span className="absolute top-4 right-4 bg-red-500 text-white px-4 py-2 rounded-full font-bold">
                           ₹{listing.price}

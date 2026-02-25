@@ -1,147 +1,197 @@
-import Listing from "../models/listing.js";
-import mongoose from "mongoose";
+const Listing = require("../models/listing");
 
-export const index = async (req, res) => {
+// Sample data for fallback when database is not connected
+const SAMPLE_LISTINGS = [
+  {
+    _id: "sample1",
+    title: "Cozy Beachfront Cottage",
+    description: "Escape to this charming beachfront cottage for a relaxing getaway. Enjoy stunning ocean views and easy access to the beach.",
+    image: {
+      url: "https://images.unsplash.com/photo-1552733407-5d5c46c3bb3b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=60",
+      filename: "beachfront"
+    },
+    price: 1500,
+    location: "Malibu, California",
+    country: "United States",
+    coordinates: { latitude: 34.0259, longitude: -118.6825 },
+    amenities: ["WiFi", "Kitchen", "Beach Access", "Parking"],
+    reviews: []
+  },
+  {
+    _id: "sample2",
+    title: "Modern Loft in Downtown",
+    description: "Stay in the heart of the city in this stylish loft apartment. Experience the vibrant urban lifestyle.",
+    image: {
+      url: "https://images.unsplash.com/photo-1501785888041-af3ef285b470?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=60",
+      filename: "downtown"
+    },
+    price: 1200,
+    location: "Manhattan, New York",
+    country: "United States",
+    coordinates: { latitude: 40.7128, longitude: -74.0060 },
+    amenities: ["WiFi", "Air Conditioning", "Elevator", "Gym"],
+    reviews: []
+  },
+  {
+    _id: "sample3",
+    title: "Mountain Retreat",
+    description: "Unplug and unwind in this peaceful mountain cabin surrounded by stunning alpine scenery.",
+    image: {
+      url: "https://images.unsplash.com/photo-1571896349842-33c89424de2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=60",
+      filename: "mountain"
+    },
+    price: 1000,
+    location: "Aspen, Colorado",
+    country: "United States",
+    coordinates: { latitude: 39.1911, longitude: -106.8175 },
+    amenities: ["WiFi", "Fireplace", "Kitchen", "Hot Tub"],
+    reviews: []
+  },
+  {
+    _id: "sample4",
+    title: "Historic Villa in Tuscany",
+    description: "Experience the charm of Tuscany in this beautifully restored historic villa with vineyards.",
+    image: {
+      url: "https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=60",
+      filename: "tuscany"
+    },
+    price: 2500,
+    location: "Florence, Tuscany",
+    country: "Italy",
+    coordinates: { latitude: 43.7696, longitude: 11.2558 },
+    amenities: ["WiFi", "Pool", "Kitchen", "Dining Area"],
+    reviews: []
+  },
+  {
+    _id: "sample5",
+    title: "Portland Urban Studio",
+    description: "A modern studio in the heart of Portland with easy access to local shops and restaurants.",
+    image: {
+      url: "https://images.unsplash.com/photo-1520022783265-656218b40543?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=60",
+      filename: "portland"
+    },
+    price: 800,
+    location: "Portland, Oregon",
+    country: "United States",
+    coordinates: { latitude: 45.5152, longitude: -122.6784 },
+    amenities: ["WiFi", "Kitchen", "Parking", "Laundry"],
+    reviews: []
+  },
+  {
+    _id: "sample6",
+    title: "Tropical Paradise in Cancun",
+    description: "Wake up to white sandy beaches and turquoise waters in this beachfront paradise.",
+    image: {
+      url: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=60",
+      filename: "cancun"
+    },
+    price: 2000,
+    location: "Cancun, Mexico",
+    country: "Mexico",
+    coordinates: { latitude: 21.1619, longitude: -86.8515 },
+    amenities: ["WiFi", "Beach Access", "Pool", "Restaurant"],
+    reviews: []
+  }
+];
+
+module.exports.index = async (req, res) => {
   try {
     const allListings = await Listing.find({}).populate("owner");
-    res.json(allListings);
+    if (allListings.length === 0) {
+      // Return sample data if database is connected but empty
+      console.log("No listings in database, using sample data");
+      res.json(SAMPLE_LISTINGS);
+    } else {
+      res.json(allListings);
+    }
   } catch (error) {
-    console.error("Error fetching listings:", error.message);
-    res.status(500).json({ error: "Failed to fetch listings" });
+    // Return sample data if database is not connected
+    console.log("Using fallback sample data due to:", error.message);
+    res.json(SAMPLE_LISTINGS);
   }
 };
 
-export const renderNewForm = (req, res) => {
-  res.json({ message: "Create new listing" });
+module.exports.renderNewForm = (req, res) => {
+   res.json({ message: "Create new listing" });
 };
 
-export const showListing = async (req, res) => {
-  let { id } = req.params;
-
-  // Validate ObjectId format
-  if (!mongoose.Types.ObjectId.isValid(id)) {
-    return res.status(400).json({ error: "Invalid listing ID format" });
-  }
-
-  try {
+module.exports.showListing = async (req, res) => {
+    let {id} = req.params;
     const listing = await Listing.findById(id)
-      .populate({
+    .populate({
         path: "reviews",
         populate: {
-          path: "author",
+            path: "author",
         },
-      })
-      .populate("owner");
-
+    })
+    .populate("owner");
     if (!listing) {
-      return res.status(404).json({ error: "Listing not found" });
+        return res.status(404).json({ error: "Listing not found" });
     }
-
-    return res.json(listing);
-  } catch (error) {
-    console.error("Error fetching listing:", error.message);
-    return res.status(500).json({ error: "Failed to fetch listing" });
-  }
+    res.json(listing);
 };
 
-export const createListing = async (req, res, next) => {
+module.exports.createListing = async (req, res, next) => {
   if (!req.user || !req.user.id) {
     return res.status(401).json({ error: "Authentication required" });
   }
-
-  console.log("📝 Creating new listing...");
-  console.log("File uploaded:", req.file ? "Yes" : "No");
-  if (req.file) {
-    console.log("File details:", {
-      filename: req.file.filename,
-      path: req.file.path,
-      originalname: req.file.originalname
-    });
-  }
-
   const newListing = new Listing(req.body.listing);
   newListing.owner = req.user.id;
-
+  
+  // Handle image if provided
   if (req.file) {
     newListing.image = {
       url: req.file.path || `/uploads/${req.file.filename}`,
       filename: req.file.filename
     };
-    console.log("✅ Image assigned:", newListing.image);
   } else {
+    // Use a default image if none provided
     newListing.image = {
       url: "https://images.unsplash.com/photo-1552321554-5fefe8c9ef14?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=60",
       filename: "default"
     };
-    console.log("⚠️  No file uploaded, using default image");
   }
-
+  
+  // Set default coordinates if not provided
   if (!newListing.coordinates) {
     newListing.coordinates = {
       latitude: 20.5937,
       longitude: 78.9629
     };
   }
-
+  
   await newListing.save();
-  console.log("💾 Listing saved with image:", newListing.image.url);
-
   res.status(201).json({ success: true, listing: newListing, message: "New Listing Created!" });
 };
 
-export const renderEditForm = async (req, res) => {
-  let { id } = req.params;
-
-  // Validate ObjectId format
-  if (!mongoose.Types.ObjectId.isValid(id)) {
-    return res.status(400).json({ error: "Invalid listing ID format" });
-  }
-
-  const listing = await Listing.findById(id);
-  if (!listing) {
-    return res.status(404).json({ error: "Listing not found" });
-  }
-  res.json(listing);
+module.exports.renderEditForm = async (req, res) => {
+    let {id} = req.params;
+    const listing = await Listing.findById(id);
+    if(!listing){
+      return res.status(404).json({ error: "Listing not found" });
+    }
+    res.json(listing);
 };
 
-export const updateListing = async (req, res) => {
-  let { id } = req.params;
+module.exports.updateListing = async (req, res) => {
+   
+    let {id} = req.params;
 
-  // Validate ObjectId format
-  if (!mongoose.Types.ObjectId.isValid(id)) {
-    return res.status(400).json({ error: "Invalid listing ID format" });
-  }
-
-  let listing = await Listing.findByIdAndUpdate(id, { ...req.body.listing }, { new: true });
-
-  if (!listing) {
-    return res.status(404).json({ error: "Listing not found" });
-  }
-
-  if (req.file) {
+   let listing = await Listing.findByIdAndUpdate(id, {...req.body.listing}, { new: true });
+   
+   if(req.file) {
     listing.image = {
       url: req.file.path || `/uploads/${req.file.filename}`,
       filename: req.file.filename
     };
     await listing.save();
-  }
+   }
 
-  res.json({ success: true, listing: listing, message: "Listing Updated!" });
+   res.json({ success: true, listing: listing, message: "Listing Updated!" });
 };
 
-export const destroyListing = async (req, res) => {
-  let { id } = req.params;
-
-  // Validate ObjectId format
-  if (!mongoose.Types.ObjectId.isValid(id)) {
-    return res.status(400).json({ error: "Invalid listing ID format" });
-  }
-
-  let deletedListing = await Listing.findByIdAndDelete(id);
-
-  if (!deletedListing) {
-    return res.status(404).json({ error: "Listing not found" });
-  }
-
-  res.json({ success: true, message: "Listing Deleted!", listing: deletedListing });
+module.exports.destroyListing = async (req, res)=> {
+   let {id} = req.params;
+   let deletedListing = await Listing.findByIdAndDelete(id);
+   res.json({ success: true, message: "Listing Deleted!", listing: deletedListing });
 };

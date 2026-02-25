@@ -20,6 +20,7 @@ import DirectGoogleMapsTest from './pages/DirectGoogleMapsTest';
 import APIKeyValidator from './pages/APIKeyValidator';
 import MapDebugger from './pages/MapDebugger';
 import AirbnbLikeMap from './pages/AirbnbLikeMap';
+import MyBookingsPage from './pages/MyBookingsPage';
 import './App.css';
 
 function App() {
@@ -35,7 +36,7 @@ function App() {
     <Router>
       <div className="App min-h-screen flex flex-col bg-gray-50">
         <Navbar isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn} />
-        
+
         <main className="flex-grow">
           <Routes>
             <Route path="/" element={<HomePage />} />
@@ -54,6 +55,7 @@ function App() {
             <Route path="/listings/:id/edit" element={<EditListingPage isLoggedIn={isLoggedIn} />} />
             <Route path="/login" element={<LoginPage setIsLoggedIn={setIsLoggedIn} />} />
             <Route path="/signup" element={<SignupPage setIsLoggedIn={setIsLoggedIn} />} />
+            <Route path="/my-bookings" element={<MyBookingsPage />} />
           </Routes>
         </main>
 

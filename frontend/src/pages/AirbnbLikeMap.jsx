@@ -96,7 +96,7 @@ function AirbnbLikeMap() {
       const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:5002';
       const response = await axios.get(`${backendUrl}/api/listings`);
       if (response.data && response.data.length > 0) {
-        setListings(normalizeListings(response.data));
+        setListings(response.data);
       } else {
         setListings(SAMPLE_LISTINGS);
       }
@@ -108,55 +108,14 @@ function AirbnbLikeMap() {
     }
   };
 
-  // Normalize listings to ensure all have valid coordinates
-  const normalizeListings = (rawListings) => {
-    return rawListings
-      .map(listing => {
-        // If listing already has coordinates object (sample data or database format)
-        if (listing.coordinates?.latitude && listing.coordinates?.longitude) {
-          return listing;
-        }
+  // Filter listings with valid coordinates for map calculations
+  const mappableListings = listings.filter(l => l.coordinates && l.coordinates.latitude != null && l.coordinates.longitude != null);
 
-        // If listing has geometry (alternative GeoJSON format)
-        if (listing.geometry?.coordinates && Array.isArray(listing.geometry.coordinates)) {
-          return {
-            ...listing,
-            coordinates: {
-              longitude: listing.geometry.coordinates[0],
-              latitude: listing.geometry.coordinates[1]
-            }
-          };
-        }
-
-        // Log warning and return null for listings without valid coordinates
-        console.warn('Listing missing coordinates:', listing.title || listing._id);
-        return null;
-      })
-      .filter(listing => listing !== null); // Remove invalid listings
-  };
-
-  // Calculate map bounds - only if we have valid listings
-  if (listings.length === 0) {
-    return (
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        height: 'calc(100vh - 80px)',
-        flexDirection: 'column',
-        gap: '20px'
-      }}>
-        <FaMapMarkerAlt style={{ fontSize: '48px', color: '#ef4444' }} />
-        <h2 style={{ color: '#1f2937', margin: 0 }}>No Listings with Coordinates</h2>
-        <p style={{ color: '#6b7280' }}>Please add coordinates to your listings to view them on the map.</p>
-      </div>
-    );
-  }
-
-  const minLat = Math.min(...listings.map(l => l.coordinates.latitude));
-  const maxLat = Math.max(...listings.map(l => l.coordinates.latitude));
-  const minLng = Math.min(...listings.map(l => l.coordinates.longitude));
-  const maxLng = Math.max(...listings.map(l => l.coordinates.longitude));
+  // Calculate map bounds (use mappable listings only)
+  const minLat = mappableListings.length > 0 ? Math.min(...mappableListings.map(l => l.coordinates.latitude)) : 0;
+  const maxLat = mappableListings.length > 0 ? Math.max(...mappableListings.map(l => l.coordinates.latitude)) : 1;
+  const minLng = mappableListings.length > 0 ? Math.min(...mappableListings.map(l => l.coordinates.longitude)) : 0;
+  const maxLng = mappableListings.length > 0 ? Math.max(...mappableListings.map(l => l.coordinates.longitude)) : 1;
 
   // Interactive Map Component
   const InteractiveMap = () => (
@@ -197,7 +156,7 @@ function AirbnbLikeMap() {
       </div>
 
       {/* Markers */}
-      {listings.map((listing) => {
+      {mappableListings.map((listing) => {
         const x = ((listing.coordinates.longitude - minLng) / (maxLng - minLng)) * 100;
         const y = ((maxLat - listing.coordinates.latitude) / (maxLat - minLat)) * 100;
         const isHovered = hoveredId === listing._id;

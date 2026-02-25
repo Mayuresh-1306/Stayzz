@@ -1,14 +1,19 @@
-import express from "express";
-import wrapAsync from "../utils/wrapAsync.js";
-import { validateReview, isLoggedIn, isReviewAuthor, verifyToken } from "../middleware.js";
-import * as reviewController from "../controllers/review.js";
+const express = require("express");
+const router = express.Router({mergeParams: true});
+const wrapAsync = require("../utils/wrapAsync.js");
+const ExpressError = require("../utils/ExpressError.js");
+const Review = require("../models/review.js");
+const Listing = require("../models/listing.js");
+const {validateReview, isloggedIn, isReviewAuthor, verifyToken} = require("../middleware.js");
+const reviewController = require("../controllers/review.js");
 
-const router = express.Router({ mergeParams: true });
-
+// Get all reviews for a listing
 router.get("/", wrapAsync(reviewController.getReviews));
 
-router.post("/", verifyToken, isLoggedIn, validateReview, wrapAsync(reviewController.createReview));
+// Create a new review
+router.post("/", verifyToken, isloggedIn, validateReview, wrapAsync(reviewController.createReview));
 
-router.delete("/:reviewId", verifyToken, isLoggedIn, isReviewAuthor, wrapAsync(reviewController.destroyReview));
+// Delete a review
+router.delete("/:reviewId", verifyToken, isloggedIn, isReviewAuthor, wrapAsync(reviewController.destroyReview));
 
-export default router;
+module.exports = router;

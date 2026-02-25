@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { FaMapMarkerAlt, FaUser, FaStar, FaArrowLeft, FaEdit, FaTrash } from 'react-icons/fa';
 import MapComponent from '../components/MapComponent';
+import BookingWidget from '../components/BookingWidget';
 import axios from 'axios';
 
 function ListingDetailPage() {
@@ -33,62 +34,10 @@ function ListingDetailPage() {
   const fetchReviews = async () => {
     try {
       const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:5002';
-      const response = await axios.get(`${backendUrl}/api/listings/${id}/reviews`);
+      const response = await axios.get(`${backendUrl}/api/reviews?listingId=${id}`);
       setReviews(response.data);
     } catch (error) {
       console.error('Error fetching reviews:', error);
-      setReviews([]); // Set empty array on error
-    }
-  };
-
-  const handleSubmitReview = async (e) => {
-    e.preventDefault();
-
-    // Check if user is logged in
-    const token = localStorage.getItem('token');
-    if (!token) {
-      alert('Please login to submit a review');
-      navigate('/login');
-      return;
-    }
-
-    // Validate review content
-    if (!newReview.trim()) {
-      alert('Please write a review before submitting');
-      return;
-    }
-
-    try {
-      const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:5002';
-      const response = await axios.post(
-        `${backendUrl}/api/listings/${id}/reviews`,
-        {
-          review: {
-            content: newReview,
-            rating: rating
-          }
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        }
-      );
-
-      if (response.data.success) {
-        // Clear form
-        setNewReview('');
-        setRating(5);
-
-        // Refresh reviews
-        await fetchReviews();
-
-        alert('Review submitted successfully!');
-      }
-    } catch (error) {
-      console.error('Error submitting review:', error);
-      alert(error.response?.data?.error || 'Failed to submit review. Please try again.');
     }
   };
 
@@ -96,16 +45,10 @@ function ListingDetailPage() {
     if (window.confirm('Are you sure you want to delete this listing?')) {
       try {
         const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:5002';
-        const token = localStorage.getItem('token');
-        await axios.delete(`${backendUrl}/api/listings/${id}`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        await axios.delete(`${backendUrl}/api/listings/${id}`);
         navigate('/listings');
       } catch (error) {
         console.error('Error deleting listing:', error);
-        alert(error.response?.data?.error || 'Failed to delete listing. Please make sure you are logged in.');
       }
     }
   };
@@ -143,13 +86,9 @@ function ListingDetailPage() {
             {/* Image */}
             {listing.image && (
               <img
-                src={listing.image.url || "https://images.unsplash.com/photo-1552321554-5fefe8c9ef14?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=60"}
+                src={listing.image.url}
                 alt={listing.title}
                 className="w-full h-64 sm:h-96 object-cover rounded-lg shadow-lg mb-6 sm:mb-8"
-                onError={(e) => {
-                  console.error("Image failed to load:", listing.image.url);
-                  e.target.src = "https://images.unsplash.com/photo-1552321554-5fefe8c9ef14?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=60";
-                }}
               />
             )}
 
@@ -256,10 +195,7 @@ function ListingDetailPage() {
                     placeholder="Share your experience..."
                     className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-red-500 h-24 resize-none text-sm sm:text-base"
                   />
-                  <button
-                    onClick={handleSubmitReview}
-                    className="bg-red-500 hover:bg-red-600 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg transition font-semibold text-sm sm:text-base w-full sm:w-auto"
-                  >
+                  <button className="bg-red-500 hover:bg-red-600 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg transition font-semibold text-sm sm:text-base w-full sm:w-auto">
                     Submit Review
                   </button>
                 </div>
@@ -275,7 +211,7 @@ function ListingDetailPage() {
                       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-2 gap-2">
                         <p className="font-semibold text-gray-800 flex items-center space-x-1 text-sm sm:text-base">
                           <FaUser className="text-gray-600" />
-                          <span>{review.author?.username || 'Anonymous'}</span>
+                          <span>{review.author}</span>
                         </p>
                         <div className="flex text-yellow-400">
                           {[...Array(review.rating)].map((_, i) => (
@@ -283,7 +219,7 @@ function ListingDetailPage() {
                           ))}
                         </div>
                       </div>
-                      <p className="text-gray-700 text-sm sm:text-base">{review.content}</p>
+                      <p className="text-gray-700 text-sm sm:text-base">{review.comment}</p>
                     </div>
                   ))
                 )}
@@ -293,43 +229,10 @@ function ListingDetailPage() {
 
           {/* Sidebar */}
           <div className="lg:col-span-1">
-            {/* Booking Card */}
-            <div className="bg-white rounded-lg shadow-lg p-4 sm:p-8 lg:sticky lg:top-20">
-              <h3 className="text-lg sm:text-xl font-bold text-gray-800 mb-6">Reserve</h3>
-
-              <div className="space-y-4 mb-6">
-                <div>
-                  <label className="block text-gray-700 font-semibold mb-2 text-sm sm:text-base">Check-in</label>
-                  <input
-                    type="date"
-                    className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-red-500 text-sm sm:text-base"
-                  />
-                </div>
-                <div>
-                  <label className="block text-gray-700 font-semibold mb-2 text-sm sm:text-base">Check-out</label>
-                  <input
-                    type="date"
-                    className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-red-500 text-sm sm:text-base"
-                  />
-                </div>
-                <div>
-                  <label className="block text-gray-700 font-semibold mb-2 text-sm sm:text-base">Guests</label>
-                  <input
-                    type="number"
-                    defaultValue="1"
-                    className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-red-500 text-sm sm:text-base"
-                  />
-                </div>
-              </div>
-
-              <button className="w-full bg-red-500 hover:bg-red-600 text-white py-2 sm:py-3 rounded-lg transition font-bold text-base sm:text-lg">
-                Reserve
-              </button>
-
-              <p className="text-gray-600 text-xs sm:text-sm text-center mt-4">
-                You won't be charged yet
-              </p>
-            </div>
+            <BookingWidget
+              listingId={id}
+              pricePerNight={listing.price}
+            />
           </div>
         </div>
       </div>
